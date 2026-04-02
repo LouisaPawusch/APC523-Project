@@ -2,6 +2,7 @@
 
 import numpy as np
 
+from .operators import flatten_field, unflatten_field
 
 class HeatTransportProblem:
     """
@@ -93,3 +94,35 @@ class HeatTransportProblem:
             return np.zeros((self.Ny, self.Nx))
 
         return self.source_fn(X, Y, t) / self.rho_c_eff
+    
+
+    def compute_rhs(self, T, operators, t):
+        """
+        Core function to compute the right-hand side of the PDE at time t, given the current temperature field T and the pre-built operators.
+        This is where the actual PDE is evaluated.
+        """
+
+        alpha = self.alpha
+        vx_eff = self.vx / self.R_th
+        vy_eff = self.vy / self.R_th
+
+        T_flat = flatten_field(T)
+        source_flat = flatten_field(self.get_source(t))
+
+        L = operators["L"]
+        b_L = operators["b_L"]
+
+        Dx = operators["Dx"]
+        b_x = operators["b_x"]
+
+        Dy = operators["Dy"]
+        b_y = operators["b_y"]
+
+        laplace_flat = L @ T_flat + b_L
+        T_x_flat = Dx @ T_flat + b_x
+        T_y_flat = Dy @ T_flat + b_y
+
+        rhs_flat = alpha * laplace_flat - vx_eff * T_x_flat - vy_eff * T_y_flat + source_flat
+        rhs = unflatten_field(rhs_flat, self.Ny, self.Nx)
+
+        return rhs

@@ -1,9 +1,34 @@
 # Script to run the simulation of the 2D heat equation with advection and source terms, 
 # using the problem definition and time-stepping methods defined in the other modules.
 
+import os
+import sys
 import numpy as np
 
+from .operators import build_laplacian_2d, build_advection_x, build_advection_y
+from .timesteppers import forward_euler_step
+
+def setup_operators(problem, advection_scheme="central"):
+    """
+    Build all sparse operators and boundary vectors once.
+    """
+    L, b_L = build_laplacian_2d(problem)
+    Dx, b_x = build_advection_x(problem, scheme=advection_scheme)
+    Dy, b_y = build_advection_y(problem, scheme=advection_scheme)
+
+    return {"L": L,
+        "b_L": b_L,
+        "Dx": Dx,
+        "b_x": b_x,
+        "Dy": Dy,
+        "b_y": b_y}
+
 def apply_boundary_conditions(T, problem, t):
+    """
+    Explicitely apply boundary conditions to the temperature field T at time t. 
+    The operators are built assuming certain BCs, but we still need to enforce them on the evolving T field at each time step.
+    The BCs are applied in the following order: left, right, bottom, top.
+    """
     dx = problem.get_dx()
     dy = problem.get_dy()
 
@@ -62,60 +87,12 @@ def apply_boundary_conditions(T, problem, t):
             grad = problem.bc_top_value
         T[-1, :] = T[-2, :] + grad * dy
 
-def compute_rhs(T, problem, t, advection_scheme="central"):
-
-    dx = problem.get_dx()
-    dy = problem.get_dy()
-
-    alpha = problem.alpha
-    vx_eff = problem.vx / problem.R_th
-    vy_eff = problem.vy / problem.R_th
-
-    rhs = np.zeros_like(T)
-
-    source_eff = problem.get_source(t)
-
-    # diffusion
-    #TODO: replace this with formulation from operators.py for better accuracy and consistency with the sparse matrix implementation.
-    T_xx = (T[1:-1, 2:] - 2.0 * T[1:-1, 1:-1] + T[1:-1, :-2]) / dx**2
-    T_yy = (T[2:, 1:-1] - 2.0 * T[1:-1, 1:-1] + T[:-2, 1:-1]) / dy**2
-
-    # advection
-    if advection_scheme == "central":
-        T_x = (T[1:-1, 2:] - T[1:-1, :-2]) / (2.0 * dx)
-        T_y = (T[2:, 1:-1] - T[:-2, 1:-1]) / (2.0 * dy)
-
-    elif advection_scheme == "upwind":
-        if vx_eff >= 0:
-            T_x = (T[1:-1, 1:-1] - T[1:-1, :-2]) / dx
-        else:
-            T_x = (T[1:-1, 2:] - T[1:-1, 1:-1]) / dx
-
-        if vy_eff >= 0:
-            T_y = (T[1:-1, 1:-1] - T[:-2, 1:-1]) / dy
-        else:
-            T_y = (T[2:, 1:-1] - T[1:-1, 1:-1]) / dy
-
-    else:
-        raise ValueError("advection_scheme must be 'central' or 'upwind'.")
-
-    rhs[1:-1, 1:-1] = (alpha * (T_xx + T_yy) - vx_eff * T_x - vy_eff * T_y + source_eff[1:-1, 1:-1])
-
-    return rhs
-
-
-def forward_euler_step(T, problem, t, dt, advection_scheme="central"):
-    T_old = T.copy()
-    apply_boundary_conditions(T_old, problem, t)
-
-    rhs = compute_rhs(T_old, problem, t, advection_scheme=advection_scheme)
-    T_new = T_old + dt * rhs
-
-    apply_boundary_conditions(T_new, problem, t + dt)
-    return T_new
-
 
 def run_simulation(problem, t_final, dt, save_every=1, advection_scheme="central"):
+    """
+    Main function to run the time-stepping simulation.
+    """
+
     if dt <= 0:
         raise ValueError("dt must be positive.")
     if t_final <= 0:
@@ -128,6 +105,8 @@ def run_simulation(problem, t_final, dt, save_every=1, advection_scheme="central
 
     apply_boundary_conditions(T, problem, t)
 
+    operators = setup_operators(problem, advection_scheme=advection_scheme)
+
     times = [t]
     all_T = [T.copy()]
 
@@ -139,7 +118,11 @@ def run_simulation(problem, t_final, dt, save_every=1, advection_scheme="central
         if dt_step <= 0:
             break
 
-        T = forward_euler_step(T, problem, t, dt_step, advection_scheme=advection_scheme)
+        T_old = T.copy()
+        apply_boundary_conditions(T_old, problem, t)
+        T = forward_euler_step(T_old, problem, operators, t, dt_step)
+        apply_boundary_conditions(T, problem, t + dt_step)
+
         print(f"Step {step}/{n_steps}, Time: {t:.4f}/{t_final:.4f}, T min: {T.min():.4f}, T max: {T.max():.4f}")
 
         t += dt_step
