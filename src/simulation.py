@@ -6,7 +6,7 @@ import sys
 import numpy as np
 
 from .operators import build_laplacian_2d, build_advection_x, build_advection_y
-from .timesteppers import forward_euler_step
+from .timesteppers import forward_euler_step, runge_kutta_4_step
 
 def setup_operators(problem, advection_scheme="central"):
     """
@@ -88,7 +88,7 @@ def apply_boundary_conditions(T, problem, t):
         T[-1, :] = T[-2, :] + grad * dy
 
 
-def run_simulation(problem, t_final, dt, save_every=1, advection_scheme="central"):
+def run_simulation(problem, t_final, dt, save_every=1, advection_scheme="central", timestepper="FE"):
     """
     Main function to run the time-stepping simulation.
     """
@@ -120,7 +120,13 @@ def run_simulation(problem, t_final, dt, save_every=1, advection_scheme="central
 
         T_old = T.copy()
         apply_boundary_conditions(T_old, problem, t)
-        T = forward_euler_step(T_old, problem, operators, t, dt_step)
+        if timestepper == "FE":
+            T = forward_euler_step(T_old, problem, operators, t, dt_step)
+        elif timestepper == "RK4":
+            T = runge_kutta_4_step(T_old, problem, operators, t, dt_step)
+        else:
+            raise ValueError(f"Unknown timestepper: {timestepper}. Supported options are 'FE' and 'RK4'.")
+
         apply_boundary_conditions(T, problem, t + dt_step)
 
         print(f"Step {step}/{n_steps}, Time: {t:.4f}/{t_final:.4f}, T min: {T.min():.4f}, T max: {T.max():.4f}")

@@ -19,7 +19,7 @@ def main():
                                    bc_right_type="neumann", bc_right_value=0.0, bc_bottom_type="neumann", bc_bottom_value=0.0, 
                                    bc_top_type="neumann", bc_top_value=0.0)
 
-    times, all_T = run_simulation(problem, t_final=10.0, dt=1e-3, save_every=1, advection_scheme="central")
+    times, all_T = run_simulation(problem, t_final=10.0, dt=1e-3, save_every=1, advection_scheme="central", timestepper="RK4")
 
     plot_initial_and_final(problem, times, all_T, save_path="results/plots/basic_simulation_init_and_final.png", cmap="inferno")
 
