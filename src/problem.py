@@ -4,15 +4,18 @@ import numpy as np
 
 from .operators import flatten_field, unflatten_field
 
+
+
 class HeatTransportProblem:
     """
     Class to define the heat transport problem with advection, diffusion, and source terms, 
     along with boundary conditions and initial conditions.
     """
 
-    def __init__(self, Lx, Ly, Nx, Ny, alpha, R_th, rho_c_eff, vx=0.0, vy=0.0, source_fn=None, 
-        initial_condition_fn=None, bc_left_type="dirichlet", bc_left_value=1.0, bc_right_type="neumann", 
-        bc_right_value=0.0, bc_bottom_type="neumann", bc_bottom_value=0.0, bc_top_type="neumann", bc_top_value=0.0,):
+    def __init__(self, Lx, Ly, Nx, Ny, alpha, R_th, rho_c_eff, vx=0.0, vy=0.0, source_fn=None,
+        initial_condition_fn=None, bc_left_type="dirichlet", bc_left_value=1.0, bc_right_type="neumann",
+        bc_right_value=0.0, bc_bottom_type="neumann", bc_bottom_value=0.0, bc_top_type="neumann", bc_top_value=0.0,
+        gaussian_x0=0.0, gaussian_y0=0.0, gaussian_Q=1.0):
 
         self.Lx = Lx
         self.Ly = Ly
@@ -40,6 +43,10 @@ class HeatTransportProblem:
 
         self.bc_top_type = bc_top_type
         self.bc_top_value = bc_top_value
+
+        self.gaussian_x0 = gaussian_x0
+        self.gaussian_y0 = gaussian_y0
+        self.gaussian_Q = gaussian_Q
 
         if self.Nx < 3 or self.Ny < 3:
             raise ValueError("Nx and Ny must be at least 3.")
@@ -126,3 +133,37 @@ class HeatTransportProblem:
         rhs = unflatten_field(rhs_flat, self.Ny, self.Nx)
 
         return rhs
+    
+    def analytical_solution(self, X, Y, t):
+        """
+        Gaussian benchmark solution for a point source of heat Q released at (gaussian_x0, gaussian_y0) at t=0.
+        """
+        if t <= 0:
+            raise ValueError("Gaussian analytical solution is singular at t=0; provide t > 0.")
+
+        ux = self.vx / self.R_th
+        uy = self.vy / self.R_th
+
+        xi = X - self.gaussian_x0 - ux * t
+        eta = Y - self.gaussian_y0 - uy * t
+        r2 = xi**2 + eta**2
+
+        return self.gaussian_Q / (4 * np.pi * self.alpha * t) * np.exp(-r2 / (4 * self.alpha * t))
+    
+class GaussianIC:
+    """
+    Callable initial condition for a Gaussian point source of heat Q released at (x0, y0) at t=0,
+    evaluated at time t0. Accounts for advection: the plume center at t0 is (x0 + ux*t0, y0 + uy*t0).
+    Pass an instance as initial_condition_fn when constructing HeatTransportProblem.
+    """
+
+    def __init__(self, x0, y0, Q, alpha, t0, vx=0.0, vy=0.0, R_th=1.0):
+        self.cx    = x0 + (vx / R_th) * t0   # advected center x at t0
+        self.cy    = y0 + (vy / R_th) * t0   # advected center y at t0
+        self.Q     = Q
+        self.alpha = alpha
+        self.t0    = t0
+
+    def __call__(self, X, Y):
+        r2 = (X - self.cx)**2 + (Y - self.cy)**2
+        return self.Q / (4 * np.pi * self.alpha * self.t0) * np.exp(-r2 / (4 * self.alpha * self.t0))
