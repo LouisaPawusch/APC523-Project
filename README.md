@@ -6,7 +6,7 @@
   - one 2nd order explicit method (eg RK2, Predictor Corrector, explicit midpoint(?))
     - RK4                                                                                                                                                                                 
 
-  - For implicit methods - requires implicit formulation of the problem:
+  - For implicit methods - requires implicit formulation of the problem: (Luis)
     - Backward Euler, Crank-Nicolson, implicit midpoint (implicit — require linear solves)            
                                                                                                                          
   2. src/linear_solvers.py — completely empty. Needed for implicit schemes:             
