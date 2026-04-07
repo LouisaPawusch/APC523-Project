@@ -7,7 +7,7 @@
     - RK4                                                                                                                                                                                 
 
   - For implicit methods - requires implicit formulation of the problem: (Luis)
-    - Backward Euler, Crank-Nicolson, implicit midpoint (implicit — require linear solves)            
+    - Backward Euler, Crank-Nicolson, implicit midpoint (implicit — require linear solvers, can use validation scheme already here)            
                                                                                                                          
   2. src/linear_solvers.py — completely empty. Needed for implicit schemes:             
     - Jacobi, under-relaxed Jacobi, Gauss-Seidel, SOR
