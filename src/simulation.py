@@ -7,6 +7,9 @@ import numpy as np
 
 from .operators import build_laplacian_2d, build_advection_x, build_advection_y
 from .timesteppers import forward_euler_step, runge_kutta_4_step
+from .implicit_timesteppers import (backward_euler_step,
+                                    crank_nicolson_step,
+                                    implicit_midpoint_step)
 
 def setup_operators(problem, advection_scheme="central"):
     """
@@ -88,7 +91,8 @@ def apply_boundary_conditions(T, problem, t):
         T[-1, :] = T[-2, :] + grad * dy
 
 
-def run_simulation(problem, t_final, dt, save_every=1, advection_scheme="central", timestepper="FE"):
+def run_simulation(problem, t_final, dt, save_every=1, advection_scheme="central",
+                   timestepper="FE", linear_solver="direct", **solver_kwargs):
     """
     Main function to run the time-stepping simulation.
     """
@@ -124,8 +128,20 @@ def run_simulation(problem, t_final, dt, save_every=1, advection_scheme="central
             T = forward_euler_step(T_old, problem, operators, t, dt_step)
         elif timestepper == "RK4":
             T = runge_kutta_4_step(T_old, problem, operators, t, dt_step)
+        elif timestepper == "BE":
+            T = backward_euler_step(T_old, problem, operators, t, dt_step,
+                                    linear_solver=linear_solver, **solver_kwargs)
+        elif timestepper == "CN":
+            T = crank_nicolson_step(T_old, problem, operators, t, dt_step,
+                                    linear_solver=linear_solver, **solver_kwargs)
+        elif timestepper == "IM":
+            T = implicit_midpoint_step(T_old, problem, operators, t, dt_step,
+                                       linear_solver=linear_solver, **solver_kwargs)
         else:
-            raise ValueError(f"Unknown timestepper: {timestepper}. Supported options are 'FE' and 'RK4'.")
+            raise ValueError(
+                f"Unknown timestepper: '{timestepper}'. "
+                "Supported options: 'FE', 'RK4', 'BE', 'CN', 'IM'."
+            )
 
         apply_boundary_conditions(T, problem, t + dt_step)
 
