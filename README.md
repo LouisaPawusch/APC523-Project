@@ -36,6 +36,12 @@ To run the project on Adroit, install dependencies using
 # From the repository root
 pip install -e .
 ```
+## Run example simulations
+```bash
+# From the repository root or from the examples folder
+python run_basic_simulation.py
+python gaussian_benchmark.py
+```
 
 ## TODO:
                              
