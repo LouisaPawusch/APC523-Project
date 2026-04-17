@@ -6,7 +6,7 @@ import sys
 import numpy as np
 
 from .operators import build_laplacian_2d, build_advection_x, build_advection_y
-from .timesteppers import forward_euler_step, runge_kutta_4_step
+from .explicit_timesteppers import forward_euler_step, runge_kutta_4_step
 from .implicit_timesteppers import (backward_euler_step,
                                     crank_nicolson_step,
                                     implicit_midpoint_step)
