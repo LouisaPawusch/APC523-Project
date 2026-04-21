@@ -48,7 +48,6 @@ def apply_boundary_conditions(T, problem, t):
         else:
             grad = problem.bc_left_value
         # Apply 1st order finite difference for Neumann BC: T[0, j] = T[1, j] - grad * dx
-        #TODO: this is a first-order approximation; for better accuracy, consider using a second-order scheme or ghost points.
         T[:, 0] = T[:, 1] - grad * dx
 
     # Right boundary
