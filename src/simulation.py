@@ -91,7 +91,7 @@ def apply_boundary_conditions(T, problem, t):
 
 
 def run_simulation(problem, t_final, dt, save_every=1, advection_scheme="central",
-                   timestepper="FE", linear_solver="direct", **solver_kwargs):
+                   timestepper="FE", linear_solver="direct", verbose=True, **solver_kwargs):
     """
     Main function to run the time-stepping simulation.
     """
@@ -144,7 +144,8 @@ def run_simulation(problem, t_final, dt, save_every=1, advection_scheme="central
 
         apply_boundary_conditions(T, problem, t + dt_step)
 
-        print(f"Step {step}/{n_steps}, Time: {t:.4f}/{t_final:.4f}, T min: {T.min():.4f}, T max: {T.max():.4f}")
+        if verbose:
+            print(f"Step {step}/{n_steps}, Time: {t:.4f}/{t_final:.4f}, T min: {T.min():.4f}, T max: {T.max():.4f}")
 
         t += dt_step
 
