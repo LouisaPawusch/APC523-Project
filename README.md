@@ -45,22 +45,10 @@ python gaussian_benchmark.py
 
 ## TODO:
                              
+1. Benchmarking/comparison tasts
+- calculate stability restrictions for FE and RK4, compare with experimental stability - for manuscript
 
-  1. test/ — empty, no tests at all - start with testing operator.py   
-  - constant solution remains constant
-  - zero source + zero velocity + zero-flux BC behaves sensibly
-  - Dirichlet BC is actually enforced
-  - operator-based RHS matches slice-based RHS for a simple case
-
-
-  4. Benchmarking/comparison tasts
-
-- add comparison tools to compare analytical v numerical solution (plotting, error metrics, eg L2 or L_infty, also runtime, memory)
-- error vs timestep size, error vs grid size, runtime vs error, explicit vs implicit comparison, central vs upwind comparison for advection
-- comparison plot across time-steppers, comparison plot across advection schemes, maybe stability-failure plots for too-large Δt
-- calculate stability restrictions for FE, compare with experimental stability
-
-5. Optional: Darcy flow module for a computed velocity field 
+2. Optional: Darcy flow module for a computed velocity field 
 - implement hydraulic head solve
 - compute Darcy flux
 - convert to pore velocity
@@ -69,5 +57,4 @@ python gaussian_benchmark.py
 Priority order
 
 - add Darcy flux
-- add testing
 - add more plotting
