@@ -284,63 +284,69 @@ def plot_nx_convergence(results, save_path="results/plots/convergence_nx.png"):
 
 
 # ---------------------------------------------------------------------------
-# Runtime plots  (5 × 2 subplots)
+# Runtime plots  (1 × 2 subplots: one per advection scheme, all methods overlaid)
 # ---------------------------------------------------------------------------
 
+METHOD_COLORS = {"FE": "C0", "RK4": "C1", "BE": "C2", "CN": "C3", "IM": "C4"}
+
 def plot_dt_runtime(results, save_path="results/plots/runtime_dt.png"):
-    fig, axes = plt.subplots(5, 2, figsize=(12, 18), constrained_layout=True)
+    fig, axes = plt.subplots(1, 2, figsize=(12, 4), constrained_layout=True)
     fig.suptitle(f"Wall-clock runtime vs. time-step size  (Nx = Ny = {REP_NX})", fontsize=13)
 
-    for row, timestepper in enumerate(METHODS):
-        for col, scheme in enumerate(SCHEMES):
-            ax = axes[row][col]
+    for col, scheme in enumerate(SCHEMES):
+        ax = axes[col]
+        for timestepper in METHODS:
             data     = results[timestepper][scheme]
             dts      = [d[0] for d in data]
             runtimes = [d[3] for d in data]
 
-            converged    = [np.isfinite(r) for r in runtimes]
-            dts_ok       = [dts[i]      for i in range(len(dts)) if converged[i]]
-            runtimes_ok  = [runtimes[i] for i in range(len(dts)) if converged[i]]
+            converged   = [np.isfinite(r) for r in runtimes]
+            dts_ok      = [dts[i]      for i in range(len(dts)) if converged[i]]
+            runtimes_ok = [runtimes[i] for i in range(len(dts)) if converged[i]]
 
             if dts_ok:
-                ax.semilogy(dts_ok, runtimes_ok, "o-")
+                ax.semilogy(dts_ok, runtimes_ok, "o-",
+                            color=METHOD_COLORS[timestepper],
+                            label=METHOD_LABELS[timestepper])
 
-            ax.set_title(f"{METHOD_LABELS[timestepper]}  |  {scheme}", fontsize=9)
-            ax.set_xlabel("$\\Delta t$")
-            ax.set_ylabel("runtime (s)")
-            ax.grid(True, alpha=0.3)
+        ax.set_title(scheme)
+        ax.set_xlabel("$\\Delta t$")
+        ax.set_ylabel("runtime (s)")
+        ax.legend(fontsize=8)
+        ax.grid(True, which="both", alpha=0.3)
 
     plt.savefig(save_path, dpi=150, bbox_inches="tight")
     print(f"Saved: {save_path}")
-    # plt.show()
 
 
 def plot_nx_runtime(results, save_path="results/plots/runtime_nx.png"):
-    fig, axes = plt.subplots(5, 2, figsize=(12, 18), constrained_layout=True)
+    fig, axes = plt.subplots(1, 2, figsize=(12, 4), constrained_layout=True)
     fig.suptitle(f"Wall-clock runtime vs. grid size  (dt = {REP_DT:.3f})", fontsize=13)
 
-    for row, timestepper in enumerate(METHODS):
-        for col, scheme in enumerate(SCHEMES):
-            ax = axes[row][col]
+    for col, scheme in enumerate(SCHEMES):
+        ax = axes[col]
+        for timestepper in METHODS:
             data     = results[timestepper][scheme]
             nxs      = [d[0] for d in data]
             runtimes = [d[3] for d in data]
 
-            converged    = [np.isfinite(r) for r in runtimes]
-            nxs_ok       = [nxs[i]      for i in range(len(nxs)) if converged[i]]
-            runtimes_ok  = [runtimes[i] for i in range(len(nxs)) if converged[i]]
+            converged   = [np.isfinite(r) for r in runtimes]
+            nxs_ok      = [nxs[i]      for i in range(len(nxs)) if converged[i]]
+            runtimes_ok = [runtimes[i] for i in range(len(nxs)) if converged[i]]
 
             if nxs_ok:
-                ax.semilogy(nxs_ok, runtimes_ok, "s-")
+                ax.semilogy(nxs_ok, runtimes_ok, "o-",
+                            color=METHOD_COLORS[timestepper],
+                            label=METHOD_LABELS[timestepper])
 
-            ax.set_title(f"{METHOD_LABELS[timestepper]}  |  {scheme}", fontsize=9)
-            ax.set_xlabel("$N_x = N_y$")
-            ax.set_ylabel("runtime (s)")
-            ax.grid(True, alpha=0.3)
+        ax.set_title(scheme)
+        ax.set_xlabel("$N_x = N_y$")
+        ax.set_ylabel("runtime (s)")
+        ax.legend(fontsize=8)
+        ax.grid(True, which="both", alpha=0.3)
 
     plt.savefig(save_path, dpi=150, bbox_inches="tight")
     print(f"Saved: {save_path}")
-    # plt.show()
 
 
 # ---------------------------------------------------------------------------
