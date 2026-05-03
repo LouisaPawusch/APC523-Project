@@ -18,12 +18,9 @@ import scipy.sparse as sp
 def get_flat_index(row, col, Nx):
     """
     Convert 2D array index (row, col) into a 1D flat index.
-
     Here:
         row = y-index, from 0 to Ny-1
-        col = x-index, from 0 to Nx-1
-
-    consistent with T.shape = (Ny, Nx).
+        col = x-index, from 0 to Nx-1, because T.shape = (Ny, Nx).
     """
     return row * Nx + col
 

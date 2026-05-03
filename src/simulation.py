@@ -6,7 +6,7 @@ import sys
 import numpy as np
 
 from .operators import build_laplacian_2d, build_advection_x, build_advection_y
-from .timesteppers import forward_euler_step, runge_kutta_4_step
+from .explicit_timesteppers import forward_euler_step, runge_kutta_4_step
 from .implicit_timesteppers import (backward_euler_step,
                                     crank_nicolson_step,
                                     implicit_midpoint_step)
@@ -48,7 +48,6 @@ def apply_boundary_conditions(T, problem, t):
         else:
             grad = problem.bc_left_value
         # Apply 1st order finite difference for Neumann BC: T[0, j] = T[1, j] - grad * dx
-        #TODO: this is a first-order approximation; for better accuracy, consider using a second-order scheme or ghost points.
         T[:, 0] = T[:, 1] - grad * dx
 
     # Right boundary
@@ -92,9 +91,7 @@ def apply_boundary_conditions(T, problem, t):
 
 
 def run_simulation(problem, t_final, dt, save_every=1, advection_scheme="central",
-                   timestepper="FE", linear_solver="direct",
-                   darcy_params=None, darcy_solver="direct",
-                   **solver_kwargs):
+                   timestepper="FE", linear_solver="direct", **solver_kwargs):
     """
     Main function to run the time-stepping simulation.
 
@@ -175,7 +172,8 @@ def run_simulation(problem, t_final, dt, save_every=1, advection_scheme="central
 
         apply_boundary_conditions(T, problem, t + dt_step)
 
-        print(f"Step {step}/{n_steps}, Time: {t:.4f}/{t_final:.4f}, T min: {T.min():.4f}, T max: {T.max():.4f}")
+        if verbose:
+            print(f"Step {step}/{n_steps}, Time: {t:.4f}/{t_final:.4f}, T min: {T.min():.4f}, T max: {T.max():.4f}")
 
         t += dt_step
 
