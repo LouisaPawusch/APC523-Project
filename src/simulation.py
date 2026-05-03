@@ -91,7 +91,9 @@ def apply_boundary_conditions(T, problem, t):
 
 
 def run_simulation(problem, t_final, dt, save_every=1, advection_scheme="central",
-                   timestepper="FE", linear_solver="direct", **solver_kwargs):
+                   timestepper="FE", linear_solver="direct",
+                   darcy_params=None, darcy_solver="direct",
+                   verbose=True, **solver_kwargs):
     """
     Main function to run the time-stepping simulation.
 
