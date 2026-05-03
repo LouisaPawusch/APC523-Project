@@ -92,9 +92,25 @@ def apply_boundary_conditions(T, problem, t):
 
 
 def run_simulation(problem, t_final, dt, save_every=1, advection_scheme="central",
-                   timestepper="FE", linear_solver="direct", **solver_kwargs):
+                   timestepper="FE", linear_solver="direct",
+                   darcy_params=None, darcy_solver="direct",
+                   **solver_kwargs):
     """
     Main function to run the time-stepping simulation.
+
+    Darcy coupling
+    --------------
+    If darcy_params (a DarcyParams instance) is provided, the Darcy flow
+    problem ∇·(K∇h)=f is solved once before the time loop (steady-state
+    assumption).  The resulting pore velocity field (vx, vy) — which may be
+    spatially varying 2D arrays — is written into problem.vx and problem.vy.
+    The spatial operators are then rebuilt to reflect the new velocity field.
+
+    Parameters
+    ----------
+    darcy_params : DarcyParams or None
+    darcy_solver : str  — linear solver for the Darcy sub-problem
+                         ("direct", "jacobi", "gauss_seidel", "sor")
     """
 
     if dt <= 0:
@@ -103,6 +119,20 @@ def run_simulation(problem, t_final, dt, save_every=1, advection_scheme="central
         raise ValueError("t_final must be positive.")
     if save_every < 1:
         raise ValueError("save_every must be at least 1.")
+
+    # --- Optional Darcy solve (sets problem.vx, problem.vy to 2D arrays) ---
+    if darcy_params is not None:
+        from .darcy import solve_darcy
+        print("Solving Darcy flow sub-problem...")
+        h, vx_field, vy_field = solve_darcy(problem, darcy_params,
+                                             linear_solver=darcy_solver)
+        problem.vx = vx_field   # 2D array (Ny, Nx)
+        problem.vy = vy_field
+        v_max = max(np.abs(vx_field).max(), np.abs(vy_field).max())
+        dx_min = min(problem.get_dx(), problem.get_dy())
+        cfl_limit = dx_min / v_max if v_max > 0 else float("inf")
+        print(f"  max |v| = {v_max:.4e} m/s  |  explicit CFL limit ~= {cfl_limit:.4e} s")
+        print(f"  current dt = {dt:.4e} s  ({'STABLE' if dt <= cfl_limit else 'UNSTABLE for explicit methods'})")
 
     T = problem.get_initial_condition()
     t = 0.0

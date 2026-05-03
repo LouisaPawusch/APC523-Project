@@ -38,15 +38,29 @@ def _build_spatial_operator(problem, operators):
 
     M is sparse (CSR) and time-independent for constant-coefficient problems.
     b_bc collects the boundary contributions from all three operator types.
+
+    Handles both scalar vx/vy (uniform flow) and 2D array vx/vy (e.g. from
+    Darcy). For arrays, diagonal sparse matrices diag(vx_flat) are used so
+    that M = α·L - diag(vx)·Dx - diag(vy)·Dy remains sparse.
     """
     alpha  = problem.alpha
     vx_eff = problem.vx / problem.R_th
     vy_eff = problem.vy / problem.R_th
 
-    M    = alpha * operators["L"] - vx_eff * operators["Dx"] - vy_eff * operators["Dy"]
-    b_bc = (alpha * operators["b_L"]
-            - vx_eff * operators["b_x"]
-            - vy_eff * operators["b_y"])
+    if isinstance(vx_eff, np.ndarray):
+        # Spatially varying velocity: build diagonal weight matrices
+        Vx = sp.diags(vx_eff.ravel(), format="csr")
+        Vy = sp.diags(vy_eff.ravel(), format="csr")
+        M    = alpha * operators["L"] - Vx @ operators["Dx"] - Vy @ operators["Dy"]
+        b_bc = (alpha * operators["b_L"]
+                - vx_eff.ravel() * operators["b_x"]
+                - vy_eff.ravel() * operators["b_y"])
+    else:
+        # Scalar velocity: simple scaling
+        M    = alpha * operators["L"] - vx_eff * operators["Dx"] - vy_eff * operators["Dy"]
+        b_bc = (alpha * operators["b_L"]
+                - vx_eff * operators["b_x"]
+                - vy_eff * operators["b_y"])
     return M, b_bc
 
 

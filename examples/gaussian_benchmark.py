@@ -9,6 +9,9 @@ Two comparisons are made:
   2. Large dt (above FE/RK4 stability limit) — stability advantage of implicit methods.
 """
 
+import matplotlib
+matplotlib.use("Agg")   # non-interactive backend: saves plots to file, no pop-up windows
+
 import numpy as np
 import os
 import sys
