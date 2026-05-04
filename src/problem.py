@@ -110,8 +110,15 @@ class HeatTransportProblem:
         """
 
         alpha = self.alpha
+
+        # vx and vy may be scalars (uniform flow) or 2D arrays (e.g. from Darcy).
+        # Flatten to 1D for element-wise multiplication with the operator outputs.
         vx_eff = self.vx / self.R_th
         vy_eff = self.vy / self.R_th
+        if isinstance(vx_eff, np.ndarray):
+            vx_eff = vx_eff.ravel()
+        if isinstance(vy_eff, np.ndarray):
+            vy_eff = vy_eff.ravel()
 
         T_flat = flatten_field(T)
         source_flat = flatten_field(self.get_source(t))
@@ -129,6 +136,7 @@ class HeatTransportProblem:
         T_x_flat = Dx @ T_flat + b_x
         T_y_flat = Dy @ T_flat + b_y
 
+        # Element-wise multiply handles both scalar and array velocity
         rhs_flat = alpha * laplace_flat - vx_eff * T_x_flat - vy_eff * T_y_flat + source_flat
         rhs = unflatten_field(rhs_flat, self.Ny, self.Nx)
 
