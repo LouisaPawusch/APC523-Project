@@ -288,6 +288,8 @@ def plot_nx_convergence(results, save_path="results/plots/convergence_nx.png"):
 # ---------------------------------------------------------------------------
 
 METHOD_COLORS = {"FE": "C0", "RK4": "C1", "BE": "C2", "CN": "C3", "IM": "C4"}
+METHODS_LINESTYLES = {"FE": "solid", "RK4": "dashed", "BE": "solid", "CN": "dotted", "IM": "dashed"}
+METHODS_MARKERS = {"FE": "o", "RK4": "s", "BE": "*", "CN": "^", "IM": "v"}
 
 def plot_dt_runtime(results, save_path="results/plots/runtime_dt.png"):
     fig, axes = plt.subplots(1, 2, figsize=(12, 4), constrained_layout=True)
@@ -305,9 +307,11 @@ def plot_dt_runtime(results, save_path="results/plots/runtime_dt.png"):
             runtimes_ok = [runtimes[i] for i in range(len(dts)) if converged[i]]
 
             if dts_ok:
-                ax.semilogy(dts_ok, runtimes_ok, "o-",
+                ax.semilogy(dts_ok, runtimes_ok,
                             color=METHOD_COLORS[timestepper],
-                            label=METHOD_LABELS[timestepper])
+                            label=METHOD_LABELS[timestepper],
+                            linestyle=METHODS_LINESTYLES[timestepper],
+                            marker=METHODS_MARKERS[timestepper])
 
         ax.set_title(scheme)
         ax.set_xlabel("$\\Delta t$")
@@ -335,9 +339,11 @@ def plot_nx_runtime(results, save_path="results/plots/runtime_nx.png"):
             runtimes_ok = [runtimes[i] for i in range(len(nxs)) if converged[i]]
 
             if nxs_ok:
-                ax.semilogy(nxs_ok, runtimes_ok, "o-",
+                ax.semilogy(nxs_ok, runtimes_ok,
                             color=METHOD_COLORS[timestepper],
-                            label=METHOD_LABELS[timestepper])
+                            label=METHOD_LABELS[timestepper],
+                            linestyle=METHODS_LINESTYLES[timestepper],
+                            marker=METHODS_MARKERS[timestepper])
 
         ax.set_title(scheme)
         ax.set_xlabel("$N_x = N_y$")
