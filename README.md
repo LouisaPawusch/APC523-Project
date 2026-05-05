@@ -41,7 +41,13 @@ pip install -e .
 # From the repository root or from the examples folder
 python run_basic_simulation.py
 python gaussian_benchmark.py
+# Darcy-coupled heat transport
+python darcy_benchmark.py
+python darcy_error_benchmark.py
+python darcy_convergence_experiments.py
 ```
+
+
 To use the slurm script, add activation of the environment at the bottom and run
 ```bash
 # From the examples folder
