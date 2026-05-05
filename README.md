@@ -53,18 +53,3 @@ To use the slurm script, add activation of the environment at the bottom and run
 # From the examples folder
 sbatch convergence_experiments.slurm
 ```
-## TODO:
-                             
-1. Benchmarking/comparison tasts
-- calculate stability restrictions for FE and RK4, compare with experimental stability - for manuscript
-
-2. Optional: Darcy flow module for a computed velocity field 
-- implement hydraulic head solve
-- compute Darcy flux
-- convert to pore velocity
-- plug that velocity field into the heat equation solver
-
-Priority order
-
-- add Darcy flux
-- add more plotting
