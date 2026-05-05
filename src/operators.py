@@ -281,6 +281,8 @@ def build_advection_x(problem, scheme="central"):
     for row in range(Ny):
         for col in range(Nx):
             k = get_flat_index(row, col, Nx)
+            # Local velocity: scalar stays scalar; 2D array → extract node value
+            local_vx = float(vx_eff[row, col]) if isinstance(vx_eff, np.ndarray) else float(vx_eff)
 
             if scheme == "central":
                 if col == 0:
@@ -338,7 +340,7 @@ def build_advection_x(problem, scheme="central"):
                     values.append(-1.0 / (2.0 * dx))
 
             elif scheme == "upwind":
-                if vx_eff >= 0:
+                if local_vx >= 0:
                     if col == 0:
                         if bc["left"]["type"] == "dirichlet":
                             rows.append(k)
@@ -428,6 +430,8 @@ def build_advection_y(problem, scheme="central"):
     for row in range(Ny):
         for col in range(Nx):
             k = get_flat_index(row, col, Nx)
+            # Local velocity: scalar stays scalar; 2D array → extract node value
+            local_vy = float(vy_eff[row, col]) if isinstance(vy_eff, np.ndarray) else float(vy_eff)
 
             if scheme == "central":
                 if row == 0:
@@ -484,7 +488,7 @@ def build_advection_y(problem, scheme="central"):
                     values.append(-1.0 / (2.0 * dy))
 
             elif scheme == "upwind":
-                if vy_eff >= 0:
+                if local_vy >= 0:
                     if row == 0:
                         if bc["bottom"]["type"] == "dirichlet":
                             rows.append(k)

@@ -378,3 +378,30 @@ def make_random_K(Ny, Nx, K_mean, K_std, log_normal=True, seed=None):
     else:
         K = np.clip(rng.normal(K_mean, K_std, size=(Ny, Nx)), 1e-10, None)
     return K
+
+
+# ---------------------------------------------------------------------------
+# Analytical solution: uniform K, linear head
+# ---------------------------------------------------------------------------
+
+def darcy_analytical_solution(problem, darcy_params):
+    """
+    Analytical head and pore velocity for uniform K with Dirichlet head BCs
+    on left/right and no-flow Neumann BCs on top/bottom (no source term).
+
+    Exact solution: h(x) = H_L + (H_R - H_L)*x/Lx  (linear, y-independent)
+    Pore velocity:  vx = K*(H_L - H_R) / (n*Lx),  vy = 0
+
+    Returns
+    -------
+    h_ana  : ndarray (Ny, Nx)
+    vx_ana : float
+    vy_ana : float  (always 0.0)
+    """
+    X, _ = problem.get_mesh()
+    H_L  = darcy_params.bc_head_left_value
+    H_R  = darcy_params.bc_head_right_value
+    h_ana = H_L + (H_R - H_L) * X / problem.Lx
+    K_val = darcy_params.K if np.isscalar(darcy_params.K) else float(np.mean(darcy_params.K))
+    vx_ana = K_val * (H_L - H_R) / (darcy_params.porosity * problem.Lx)
+    return h_ana, vx_ana, 0.0
