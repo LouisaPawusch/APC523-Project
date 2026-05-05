@@ -42,7 +42,11 @@ pip install -e .
 python run_basic_simulation.py
 python gaussian_benchmark.py
 ```
-
+To use the slurm script, add activation of the environment at the bottom and run
+```bash
+# From the examples folder
+sbatch convergence_experiments.slurm
+```
 ## TODO:
                              
 1. Benchmarking/comparison tasts
