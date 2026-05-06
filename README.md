@@ -31,25 +31,30 @@ This will allow us to investigate various different error metrics and compare ou
 
 ## Installation
 
-To run the project on Adroit, install dependencies using 
+To run the project on Adroit, after cloning the repo and creating a new environment, e.g., using 
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+, install dependencies using 
 ```bash
 # From the repository root
 pip install -e .
 ```
 ## Run example simulations
 ```bash
-# From the repository root or from the examples folder
-python run_basic_simulation.py
-python gaussian_benchmark.py
+# From the examples folder
+python3 run_basic_simulation.py
+python3 gaussian_benchmark.py
 # Darcy-coupled heat transport
-python darcy_benchmark.py
-python darcy_error_benchmark.py
-python darcy_convergence_experiments.py
+python3 darcy_benchmark.py
+python3 darcy_error_benchmark.py
 ```
 
 
-To use the slurm script, add activation of the environment at the bottom and run
+To use the slurm script (for the computationally expensive convergence experiments), add activation of the environment as instructed and run
 ```bash
 # From the examples folder
 sbatch convergence_experiments.slurm
+sbatch darcy_convergence_experiments.slurm
 ```
