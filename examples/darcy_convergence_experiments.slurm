@@ -8,8 +8,8 @@
 #SBATCH --mem-per-cpu=4G         # memory per cpu-core (4G is  default)
 #SBATCH --time=01:00:00          # total run time limit (HH:MM:SS)
 
-module purge
+module purge 
 
 ## ADD ACTIVATION OF ENVIRONMENT HERE (e.g. source ../.venv/bin/activate)
 source ../.venv/bin/activate
-python3 convergence_experiments.py
+python3 darcy_convergence_experiments.py
